@@ -5,6 +5,9 @@ import { AppService } from './app.service';
 import { SupabaseModule } from './supabase';
 import { RedisModule } from './redis';
 import { RabbitMQModule } from './rabbitmq';
+import { ReceiversModule } from './receivers';
+import { TransactionsModule } from './transactions';
+import { GatewayModule } from './gateway';
 
 @Module({
   imports: [
@@ -14,6 +17,9 @@ import { RabbitMQModule } from './rabbitmq';
     SupabaseModule,
     RedisModule,
     RabbitMQModule,
+    ReceiversModule,
+    TransactionsModule,
+    GatewayModule,
   ],
   controllers: [AppController],
   providers: [AppService],
