@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { TransactionsService } from './transactions.service';
 import * as path from 'path';
@@ -17,6 +17,23 @@ export class TransactionsController {
       receiverId,
       currency || 'USD',
     );
+  }
+
+  @Post()
+  create(
+    @Body()
+    body: {
+      receiver_id: string;
+      currency_id: string;
+      reference_number: string;
+      to: string;
+      date_time: string;
+      paid_with: string;
+      amount: number;
+      status: 'Approved' | 'Pending';
+    },
+  ) {
+    return this.transactionsService.create(body);
   }
 
   @Get('download/:id')

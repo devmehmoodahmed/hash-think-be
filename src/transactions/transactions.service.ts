@@ -80,6 +80,7 @@ export class TransactionsService {
     await this.invalidateTransactionCache(data.receiver_id);
 
     // Publish to RabbitMQ so the consumer can broadcast via Socket.IO
+    console.log('[RabbitMQ] Transaction queued:', data.id);
     await this.rabbitmqService.publish(
       RabbitMQService.TRANSACTION_QUEUE,
       data,

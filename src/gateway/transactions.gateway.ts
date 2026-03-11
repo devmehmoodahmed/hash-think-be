@@ -30,6 +30,7 @@ export class TransactionsGateway implements OnModuleInit {
       RabbitMQService.TRANSACTION_QUEUE,
       (msg) => {
         const transaction = JSON.parse(msg.content.toString());
+        console.log('[RabbitMQ] Transaction dequeued:', transaction.id);
         this.emitNewTransaction(transaction);
       },
     );
