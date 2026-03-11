@@ -5,8 +5,10 @@ import {
   MessageBody,
   ConnectedSocket,
 } from '@nestjs/websockets';
+import { OnModuleInit } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { TransactionsService } from '../transactions';
+import { RabbitMQService } from '../rabbitmq';
 
 @WebSocketGateway({
   cors: {
@@ -14,11 +16,24 @@ import { TransactionsService } from '../transactions';
     credentials: true,
   },
 })
-export class TransactionsGateway {
+export class TransactionsGateway implements OnModuleInit {
   @WebSocketServer()
   server: Server;
 
-  constructor(private readonly transactionsService: TransactionsService) {}
+  constructor(
+    private readonly transactionsService: TransactionsService,
+    private readonly rabbitmqService: RabbitMQService,
+  ) {}
+
+  async onModuleInit() {
+    await this.rabbitmqService.consume(
+      RabbitMQService.TRANSACTION_QUEUE,
+      (msg) => {
+        const transaction = JSON.parse(msg.content.toString());
+        this.emitNewTransaction(transaction);
+      },
+    );
+  }
 
   // Client requests to update a transaction status
   @SubscribeMessage('transaction:updateStatus')

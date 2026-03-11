@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseService } from '../supabase';
 import { RedisService } from '../redis';
+import { RabbitMQService } from '../rabbitmq';
 
 @Injectable()
 export class TransactionsService {
@@ -9,6 +10,7 @@ export class TransactionsService {
   constructor(
     private readonly supabaseService: SupabaseService,
     private readonly redisService: RedisService,
+    private readonly rabbitmqService: RabbitMQService,
   ) {}
 
   async findByReceiverAndCurrency(receiverId: string, currencyCode: string) {
@@ -76,6 +78,13 @@ export class TransactionsService {
     if (error) throw error;
 
     await this.invalidateTransactionCache(data.receiver_id);
+
+    // Publish to RabbitMQ so the consumer can broadcast via Socket.IO
+    await this.rabbitmqService.publish(
+      RabbitMQService.TRANSACTION_QUEUE,
+      data,
+    );
+
     return data;
   }
 
