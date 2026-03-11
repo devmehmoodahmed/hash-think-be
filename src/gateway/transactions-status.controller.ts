@@ -1,6 +1,8 @@
-import { Controller, Patch, Param, Body } from '@nestjs/common';
+import { Controller, Patch, Param, Body, BadRequestException } from '@nestjs/common';
 import { TransactionsService } from '../transactions';
 import { TransactionsGateway } from './transactions.gateway';
+
+const VALID_STATUSES = ['Approved', 'Pending'];
 
 @Controller('transactions')
 export class TransactionsStatusController {
@@ -12,9 +14,17 @@ export class TransactionsStatusController {
   @Patch(':id/status')
   async updateStatus(
     @Param('id') id: string,
-    @Body() body: { status: 'Approved' | 'Pending' },
+    @Body() body: { status: string },
   ) {
-    const updated = await this.transactionsService.updateStatus(id, body.status);
+    if (!VALID_STATUSES.includes(body.status)) {
+      throw new BadRequestException(
+        `Invalid status "${body.status}". Allowed values: ${VALID_STATUSES.join(', ')}`,
+      );
+    }
+    const updated = await this.transactionsService.updateStatus(
+      id,
+      body.status as 'Approved' | 'Pending',
+    );
     this.transactionsGateway.server.emit('transaction:statusUpdated', updated);
     return updated;
   }

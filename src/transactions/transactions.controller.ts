@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, Res, BadRequestException } from '@nestjs/common';
 import type { Response } from 'express';
 import { TransactionsService } from './transactions.service';
 import * as path from 'path';
@@ -30,10 +30,16 @@ export class TransactionsController {
       date_time: string;
       paid_with: string;
       amount: number;
-      status: 'Approved' | 'Pending';
+      status: string;
     },
   ) {
-    return this.transactionsService.create(body);
+    const validStatuses = ['Approved', 'Pending'];
+    if (!validStatuses.includes(body.status)) {
+      throw new BadRequestException(
+        `Invalid status "${body.status}". Allowed values: ${validStatuses.join(', ')}`,
+      );
+    }
+    return this.transactionsService.create(body as any);
   }
 
   @Get('download/:id')
