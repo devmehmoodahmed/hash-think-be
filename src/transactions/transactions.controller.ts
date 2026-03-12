@@ -1,12 +1,19 @@
-import { Controller, Get, Post, Body, Param, Query, Res, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Query, Res, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import type { Response } from 'express';
 import { TransactionsService } from './transactions.service';
+import { TransactionsGateway } from '../gateway';
 import * as path from 'path';
 import * as fs from 'fs';
 
+const VALID_STATUSES = ['Approved', 'Pending'];
+
 @Controller('transactions')
 export class TransactionsController {
-  constructor(private readonly transactionsService: TransactionsService) {}
+  constructor(
+    private readonly transactionsService: TransactionsService,
+    @Inject(forwardRef(() => TransactionsGateway))
+    private readonly transactionsGateway: TransactionsGateway,
+  ) {}
 
   @Get()
   findByReceiverAndCurrency(
@@ -40,6 +47,24 @@ export class TransactionsController {
       );
     }
     return this.transactionsService.create(body as any);
+  }
+
+  @Patch(':id/status')
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() body: { status: string },
+  ) {
+    if (!VALID_STATUSES.includes(body.status)) {
+      throw new BadRequestException(
+        `Invalid status "${body.status}". Allowed values: ${VALID_STATUSES.join(', ')}`,
+      );
+    }
+    const updated = await this.transactionsService.updateStatus(
+      id,
+      body.status as 'Approved' | 'Pending',
+    );
+    this.transactionsGateway.server.emit('transaction:statusUpdated', updated);
+    return updated;
   }
 
   @Get('download/:id')

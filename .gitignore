@@ -22,8 +22,6 @@ lerna-debug.log*
 *.swo
 
 # env files
-.env
-.env.local
 .env.*.local
 
 # tests
@@ -31,3 +29,4 @@ lerna-debug.log*
 
 # debug
 npm-debug.log*
+config.bat

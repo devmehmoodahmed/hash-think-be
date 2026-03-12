@@ -1,11 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TransactionsGateway } from './transactions.gateway';
-import { TransactionsStatusController } from './transactions-status.controller';
 import { TransactionsModule } from '../transactions';
 
 @Module({
-  imports: [TransactionsModule],
-  controllers: [TransactionsStatusController],
+  imports: [forwardRef(() => TransactionsModule)],
   providers: [TransactionsGateway],
   exports: [TransactionsGateway],
 })

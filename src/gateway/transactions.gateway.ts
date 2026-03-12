@@ -5,7 +5,7 @@ import {
   MessageBody,
   ConnectedSocket,
 } from '@nestjs/websockets';
-import { OnModuleInit } from '@nestjs/common';
+import { OnModuleInit, Inject, forwardRef } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { TransactionsService } from '../transactions';
 import { RabbitMQService } from '../rabbitmq';
@@ -21,6 +21,7 @@ export class TransactionsGateway implements OnModuleInit {
   server: Server;
 
   constructor(
+    @Inject(forwardRef(() => TransactionsService))
     private readonly transactionsService: TransactionsService,
     private readonly rabbitmqService: RabbitMQService,
   ) {}
